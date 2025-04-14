@@ -1,0 +1,358 @@
+#include "BigInt.h"
+#include <stdexcept>
+#include <map>
+#include "utility.h"
+
+BigInt::BigInt() {
+	sign = '+';
+	size = 0;
+}
+
+BigInt::BigInt(const BigInt& value) {
+	sign = value.sign;
+	size = value.size;
+
+	for (size_t i = 0; i < capacity; i++) {
+		data[i] = value.data[i];
+	}
+
+}
+
+BigInt::BigInt(const long long& value) {
+	sign = value > 0 ? '+' : '-';
+	size = getNumberOfDigits(value);
+
+	long long tValue = std::abs(value);
+	int index = size - 1;
+
+	for (size_t i = 0; i < size - 1; i++) {
+		data[i] = 0;
+	}
+
+	while (tValue != 0)
+	{
+		data[index--] = tValue % 10;
+		tValue /= 10;
+	}
+
+}
+
+BigInt::BigInt(const std::string& value) {
+	char vSign = (value.at(0) == '-') ? '-' : '+';
+	std::string nStr = (vSign == '-') ? value.substr(1) : value;
+
+	if (isValid(nStr)) {
+		for (size_t i = 0; i < nStr.size() - 1; i++) {
+			data[i] = 0;
+		}
+
+		for (size_t i = 0; i < nStr.size(); i++) {
+			data[i] = nStr.at(i) - '0';
+		}
+		size = nStr.size();
+		sign = vSign;
+	}
+	else {
+		throw std::invalid_argument("String contains invalid characters");
+	}
+}
+
+int BigInt::getSize() const {
+	return size;
+}
+
+char BigInt::getSign() const {
+	return sign;
+}
+
+const int* BigInt::getData() const {
+	return data;
+}
+
+const int BigInt::getCapacity() {
+	return capacity;
+}
+
+bool BigInt::isNegative() const {
+	return sign == '-';
+}
+
+void BigInt::makePositive() {
+	sign = '+';
+}
+
+void BigInt::makeNegative() {
+	sign = '-';
+}
+
+BigInt BigInt::abs(const BigInt value) const {
+	 BigInt res = BigInt(value);
+	 res.sign = '+';
+	 return res;
+}
+
+const BigInt& BigInt::max(const BigInt& a, const BigInt& b) {
+	char aSign = a.sign;
+	char bSign = b.sign;
+
+
+	if (aSign - bSign == 0 && a.size != b.size) {
+		if (a.isNegative()) {
+			return a.size > b.size ? b : a;
+		}
+		else {
+			return a.size > b.size ? a : b;
+		}
+	} else if (aSign - bSign != 0) {
+		if (a.isNegative()) {
+			return b;
+		}
+		else {
+			return a;
+		}
+	}
+
+	const int* pa = a.getData();
+	const int* pb = b.getData();
+
+	int i = 0;
+
+	while (i < a.size) {
+		int aDigit = *(pa + i);
+		int bDigit = *(pb + i);
+
+		if (a.isNegative()) {
+			if (aDigit > bDigit) {
+				return b;
+			}
+			else if (aDigit == bDigit){
+				i++;
+			}
+			else {
+				return a;
+			}
+		}
+		else {
+			if (aDigit > bDigit) {
+				return a;
+			}
+			else if (aDigit == bDigit) {
+				i++;
+			}
+			else {
+				return b;
+			}
+		}
+	}
+
+	return a;
+}
+
+
+const BigInt& BigInt::min(const BigInt& a, const BigInt& b) {
+	return max(a, b) == a ? b : a;
+}
+
+bool BigInt::operator==(const BigInt& value) const{
+	if (this == &value) {
+		return true;
+	}
+
+	for (size_t i = 0; i < capacity; i++) {
+		if (data[i] != value.data[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool BigInt::operator!=(const BigInt& value) const {
+	if (this->operator==(value)) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+BigInt BigInt::substruct(const BigInt& val) const{
+	const BigInt& thisVal = *this;
+
+	int i = getSize() - 1;
+	int j = val.getSize() - 1;
+
+	if (i < j) {
+		throw std::invalid_argument("Subtraction from a smaller number is prohibited");
+	}
+
+	const int* minuend = getData();
+	const int* subtrahend = val.getData();
+
+	int aDigit = 0;
+	int bDigit = 0;
+
+	int loan = 0;
+	int res = 0;
+
+	std::string str;
+
+	while (i >= 0) {
+		aDigit = *(minuend + i) - loan;
+		bDigit = j >= 0 ? *(subtrahend + j) : 0;
+
+		if (aDigit == 0 && i == 0 && j < 0) {
+			break;
+		} 
+		else if (i >= 0 && j < 0) {
+			res = aDigit;
+		} 
+		else if (aDigit >= bDigit) {
+			res = aDigit - bDigit;
+			loan = 0;
+		}
+		else if (aDigit < bDigit && i > 0){
+			res = 10 - bDigit + aDigit;
+			loan = 1;
+		}
+		else {
+			throw std::invalid_argument("Subtraction from a smaller number is prohibited");
+		}
+
+		str.insert(0, std::to_string(res));
+
+		i--;
+		j--;
+	}
+
+
+	if (str.at(0) == '0') {
+		int k = 1;
+		while (k < str.size() - 1 && str.at(k) == '0')
+		{ k++; };
+		return str.substr(k, str.size() - 1);
+	}
+
+	return BigInt(str);
+}
+
+BigInt BigInt::add(const BigInt& val) const {
+	int i = getSize() - 1;
+	int j = val.getSize() - 1;
+
+	const int* term1 = getData();
+	const int* term2 = val.getData();
+
+	int index = 0;
+	int transfer = 0;
+	int res = 0;
+
+	std::string str;
+
+	while (i >= 0 || j >= 0) {
+		int aDigit = *(term1 + i);
+		int bDigit = *(term2 + j);
+
+		if (i >= 0 && j < 0) {
+			res = aDigit + transfer;
+		}
+		else if (j >= 0 && i < 0) {
+			res = bDigit + transfer;
+		}
+		else {
+			res = aDigit + bDigit + transfer;
+		}
+
+		transfer = 0;
+
+		if (res >= 10) {
+			res = res % 10;
+			transfer = 1;
+		}
+
+		str.insert(0, std::to_string(res));
+
+		i--;
+		j--;
+	}
+
+	if (transfer == 1) {
+		str.insert(0, std::to_string(transfer));
+	}
+
+	return BigInt(str);
+}
+
+BigInt BigInt::operator+(const BigInt& value) const {
+
+	const BigInt& thisVal = *this;
+
+	char lsign = sign;
+	char rsign = value.sign;
+
+	if (lsign - rsign == 0) {
+		BigInt rv = thisVal.add(value);
+		if (thisVal.isNegative()) {
+			rv.makeNegative();
+		}
+		return rv;
+	}
+	else if ((lsign - rsign) != 0) {
+		BigInt a = abs(thisVal);
+		BigInt b = abs(value);
+
+		const BigInt& maxVal = max(a, b);
+		const BigInt& minVal = min(a, b);
+
+		bool isMaxValIsNegative = maxVal == a ? thisVal.isNegative() : value.isNegative();
+		bool isMaxValIsIsRightVal = a != b && minVal == a;
+
+		BigInt rv = maxVal.substruct(minVal);
+		if (isMaxValIsNegative || isMaxValIsIsRightVal) {
+			rv.makeNegative();
+		}
+		return rv;
+	}
+}
+
+
+BigInt BigInt::operator-(const BigInt& value) const{
+
+	BigInt res;
+	const BigInt& thisVal = *this;
+
+	int i = size - 1;
+	int j = value.size - 1;
+	int loan = 0;
+
+	char lSign = sign;
+	char rSign = value.sign;
+
+	BigInt a = abs(thisVal);
+	BigInt b = abs(value);
+
+	const BigInt& maxVal = max(a, b);
+	const BigInt& minVal = min(a, b);
+
+	bool isMaxValIsNegative = maxVal == a ? thisVal.isNegative() : value.isNegative();
+	bool isMaxValIsRightVal = a != b && minVal == a;
+
+	if (lSign - rSign == 0) {
+		res = maxVal.substruct(minVal);
+		if (isMaxValIsNegative || isMaxValIsRightVal) {
+			res.makeNegative();
+		}
+	}
+	else if ((lSign - rSign) != 0) {
+		res = thisVal.add(value);
+		if (isMaxValIsNegative || isMaxValIsRightVal) { //чисто по thisVal можно будет определять
+			res.makeNegative();
+		}
+	}
+
+	return res;
+}
+
+
+
+
