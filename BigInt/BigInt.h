@@ -8,7 +8,7 @@ class BigInt
 	char sign{'+'};
 	int size{0};
 
-	static BigInt substruct(const BigInt& a, const BigInt& b);
+	BigInt substruct(const BigInt& val) const;
 	BigInt add(const BigInt& val) const;	
 	
 public:
