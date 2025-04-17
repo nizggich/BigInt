@@ -179,6 +179,10 @@ bool BigInt::operator!=(const BigInt& value) const {
 BigInt BigInt::substruct(const BigInt& value) const{
 	BigInt thisVal = *this;
 
+	if (thisVal.getSign() == '+' && value.getSign() == '-') {
+		return thisVal.add(value);
+	}
+
 	int i = thisVal.getSize() - 1;
 	int j = value.getSize() - 1;
 
@@ -227,19 +231,19 @@ BigInt BigInt::substruct(const BigInt& value) const{
 	bool isMaxValIsNegative = maxVal == thisVal ? thisVal.isNegative() : value.isNegative();
 	bool isMaxValIsRightVal = aMod != bMod && minVal == aMod;
 	
+	BigInt bi = BigInt(str);
+
+	if (isMaxValIsNegative || isMaxValIsRightVal) {
+		bi.makeNegative();
+	}
+
 	if (str.at(0) == '0') {
 		int k = 1;
 		while (k < str.size() - 1 && str.at(k) == '0')
 		{
 			k++;
 		};
-		str = str.substr(k, str.size() - 1);
-	}
-
-	BigInt bi = BigInt(str);
-
-	if (isMaxValIsNegative || isMaxValIsRightVal) {
-		bi.makeNegative();
+		return str.substr(k, str.size() - 1);
 	}
 
 	return bi;

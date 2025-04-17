@@ -8,8 +8,8 @@ class BigInt
 	char sign{'+'};
 	int size{0};
 
-	BigInt substruct(const BigInt& val) const;
-	BigInt add(const BigInt& val) const;	
+	BigInt substruct(const BigInt& value) const;
+	BigInt add(const BigInt& value) const;	
 	
 public:
 	BigInt();
@@ -25,13 +25,15 @@ public:
 	bool isNegative() const;
 	void makePositive();
 	void makeNegative();
-	BigInt abs(const BigInt value) const;
 
 	static const BigInt& max(const BigInt& a, const BigInt& b);
 	static const BigInt& min(const BigInt& a, const BigInt& b);
+	static BigInt abs(const BigInt value);
 
 	bool operator==(const BigInt& value) const;
 	bool operator!=(const BigInt& value) const;
+	bool operator<(const BigInt& value) const;
+	bool operator>(const BigInt& value) const;
 	BigInt operator+(const BigInt& value) const;
 	BigInt operator-(const BigInt& value) const;
 
