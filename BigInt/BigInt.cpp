@@ -85,7 +85,7 @@ void BigInt::makeNegative() {
 	sign = '-';
 }
 
-BigInt BigInt::abs(const BigInt value) {
+BigInt BigInt::abs(const BigInt value) const {
 	 BigInt res = BigInt(value);
 	 res.sign = '+';
 	 return res;
@@ -176,20 +176,18 @@ bool BigInt::operator!=(const BigInt& value) const {
 	}
 }
 
-BigInt BigInt::substruct(const BigInt& value) const{
-	BigInt thisVal = *this;
+BigInt BigInt::substruct(const BigInt& val) const{
+	const BigInt& thisVal = *this;
 
-	int i = thisVal.getSize() - 1;
-	int j = value.getSize() - 1;
+	int i = getSize() - 1;
+	int j = val.getSize() - 1;
 
-	BigInt aMod = abs(thisVal);
-	BigInt bMod = abs(value);
+	if (i < j) {
+		throw std::invalid_argument("Subtraction from a smaller number is prohibited");
+	}
 
-	const BigInt& maxVal = max(aMod, bMod);
-	const BigInt& minVal = min(aMod, bMod);
-
-	const int* minuend = maxVal.getData();
-	const int* subtrahend = minVal.getData();
+	const int* minuend = getData();
+	const int* subtrahend = val.getData();
 
 	int aDigit = 0;
 	int bDigit = 0;
@@ -217,6 +215,9 @@ BigInt BigInt::substruct(const BigInt& value) const{
 			res = 10 - bDigit + aDigit;
 			loan = 1;
 		}
+		else {
+			throw std::invalid_argument("Subtraction from a smaller number is prohibited");
+		}
 
 		str.insert(0, std::to_string(res));
 
@@ -224,35 +225,23 @@ BigInt BigInt::substruct(const BigInt& value) const{
 		j--;
 	}
 
-	bool isMaxValIsNegative = maxVal == thisVal ? thisVal.isNegative() : value.isNegative();
-	bool isMaxValIsRightVal = aMod != bMod && minVal == aMod;
-	
+
 	if (str.at(0) == '0') {
 		int k = 1;
 		while (k < str.size() - 1 && str.at(k) == '0')
-		{
-			k++;
-		};
-		str = str.substr(k, str.size() - 1);
+		{ k++; };
+		return str.substr(k, str.size() - 1);
 	}
 
-	BigInt bi = BigInt(str);
-
-	if (isMaxValIsNegative || isMaxValIsRightVal) {
-		bi.makeNegative();
-	}
-
-	return bi;
+	return BigInt(str);
 }
 
-BigInt BigInt::add(const BigInt& value) const {
-	BigInt thisVal = *this;
-
+BigInt BigInt::add(const BigInt& val) const {
 	int i = getSize() - 1;
-	int j = value.getSize() - 1;
+	int j = val.getSize() - 1;
 
 	const int* term1 = getData();
-	const int* term2 = value.getData();
+	const int* term2 = val.getData();
 
 	int index = 0;
 	int transfer = 0;
@@ -291,18 +280,6 @@ BigInt BigInt::add(const BigInt& value) const {
 		str.insert(0, std::to_string(transfer));
 	}
 
-	if (thisVal.isNegative() && value.isNegative()) {
-		str.insert(0, "-");
-		return BigInt(str);
-	}
-
-	BigInt aMod = abs(thisVal);
-	BigInt bMod = abs(value);
-
-	if (aMod < bMod) {
-		str.insert(0, "-");
-	}
-
 	return BigInt(str);
 }
 
@@ -314,40 +291,67 @@ BigInt BigInt::operator+(const BigInt& value) const {
 	char rsign = value.sign;
 
 	if (lsign - rsign == 0) {
-		return thisVal.add(value);
+		BigInt rv = thisVal.add(value);
+		if (thisVal.isNegative()) {
+			rv.makeNegative();
+		}
+		return rv;
 	}
 	else if ((lsign - rsign) != 0) {
-		return thisVal.substruct(value);
+		BigInt a = abs(thisVal);
+		BigInt b = abs(value);
+
+		const BigInt& maxVal = max(a, b);
+		const BigInt& minVal = min(a, b);
+
+		bool isMaxValIsNegative = maxVal == a ? thisVal.isNegative() : value.isNegative();
+		bool isMaxValIsIsRightVal = a != b && minVal == a;
+
+		BigInt rv = maxVal.substruct(minVal);
+		if (isMaxValIsNegative || isMaxValIsIsRightVal) {
+			rv.makeNegative();
+		}
+		return rv;
 	}
 }
 
 
 BigInt BigInt::operator-(const BigInt& value) const{
+
+	BigInt res;
 	const BigInt& thisVal = *this;
 
 	int i = size - 1;
 	int j = value.size - 1;
+	int loan = 0;
 
 	char lSign = sign;
 	char rSign = value.sign;
 
+	BigInt a = abs(thisVal);
+	BigInt b = abs(value);
+
+	const BigInt& maxVal = max(a, b);
+	const BigInt& minVal = min(a, b);
+
+	bool isMaxValIsNegative = maxVal == a ? thisVal.isNegative() : value.isNegative();
+	bool isMaxValIsRightVal = a != b && minVal == a;
+
 	if (lSign - rSign == 0) {
-		return thisVal.substruct(value);
+		res = maxVal.substruct(minVal);
+		if (isMaxValIsNegative || isMaxValIsRightVal) {
+			res.makeNegative();
+		}
 	}
 	else if ((lSign - rSign) != 0) {
-		BigInt res = thisVal.add(value);
+		res = thisVal.add(value);
+		if (isMaxValIsNegative || isMaxValIsRightVal) { //чисто по thisVal можно будет определять
+			res.makeNegative();
+		}
 	}
 
-	return BigInt();
+	return res;
 }
-
-bool BigInt::operator<(const BigInt& value) const {
-	return max(*this, value) == *this ? false : true;
-};
-
-bool BigInt::operator>(const BigInt& value) const {
-	return value < *this;
-};
 
 
 
