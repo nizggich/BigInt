@@ -18,11 +18,11 @@ BigInt::BigInt(const BigInt& value) {
 
 }
 
-BigInt::BigInt(const long long& value) {
-	sign = value > 0 ? '+' : '-';
-	size = getNumberOfDigits(value);
+BigInt::BigInt(const long long& value1) {
+	sign = value1 > 0 ? '+' : '-';
+	size = getNumberOfDigits(value1);
 
-	long long tValue = std::abs(value);
+	long long tValue = std::abs(value1);
 	int index = size - 1;
 
 	for (size_t i = 0; i < size - 1; i++) {
