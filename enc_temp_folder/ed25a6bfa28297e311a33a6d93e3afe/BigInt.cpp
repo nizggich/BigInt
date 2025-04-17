@@ -86,9 +86,9 @@ void BigInt::makeNegative() {
 }
 
 BigInt BigInt::abs(const BigInt value) {
-	BigInt res = BigInt(value);
-	res.sign = '+';
-	return res;
+	 BigInt res = BigInt(value);
+	 res.sign = '+';
+	 return res;
 }
 
 const BigInt& BigInt::max(const BigInt& a, const BigInt& b) {
@@ -103,8 +103,7 @@ const BigInt& BigInt::max(const BigInt& a, const BigInt& b) {
 		else {
 			return a.size > b.size ? a : b;
 		}
-	}
-	else if (aSign - bSign != 0) {
+	} else if (aSign - bSign != 0) {
 		if (a.isNegative()) {
 			return b;
 		}
@@ -126,7 +125,7 @@ const BigInt& BigInt::max(const BigInt& a, const BigInt& b) {
 			if (aDigit > bDigit) {
 				return b;
 			}
-			else if (aDigit == bDigit) {
+			else if (aDigit == bDigit){
 				i++;
 			}
 			else {
@@ -154,7 +153,7 @@ const BigInt& BigInt::min(const BigInt& a, const BigInt& b) {
 	return max(a, b) == a ? b : a;
 }
 
-bool BigInt::operator==(const BigInt& value) const {
+bool BigInt::operator==(const BigInt& value) const{
 	if (this == &value) {
 		return true;
 	}
@@ -177,8 +176,12 @@ bool BigInt::operator!=(const BigInt& value) const {
 	}
 }
 
-BigInt BigInt::substruct(const BigInt& value) const {
+BigInt BigInt::substruct(const BigInt& value) const{
 	BigInt thisVal = *this;
+
+	if (thisVal.getSign() == '+' && value.getSign() == '-') {
+		return thisVal.add(value);
+	}
 
 	int i = thisVal.getSize() - 1;
 	int j = value.getSize() - 1;
@@ -206,15 +209,15 @@ BigInt BigInt::substruct(const BigInt& value) const {
 
 		if (aDigit == 0 && i == 0 && j < 0) {
 			break;
-		}
+		} 
 		else if (i >= 0 && j < 0) {
 			res = aDigit;
-		}
+		} 
 		else if (aDigit >= bDigit) {
 			res = aDigit - bDigit;
 			loan = 0;
 		}
-		else if (aDigit < bDigit && i > 0) {
+		else if (aDigit < bDigit && i > 0){
 			res = 10 - bDigit + aDigit;
 			loan = 1;
 		}
@@ -227,6 +230,12 @@ BigInt BigInt::substruct(const BigInt& value) const {
 
 	bool isMaxValIsNegative = maxVal == thisVal ? thisVal.isNegative() : value.isNegative();
 	bool isMaxValIsRightVal = aMod != bMod && minVal == aMod;
+	
+	BigInt bi = BigInt(str);
+
+	if (isMaxValIsNegative || isMaxValIsRightVal) {
+		bi.makeNegative();
+	}
 
 	if (str.at(0) == '0') {
 		int k = 1;
@@ -234,13 +243,7 @@ BigInt BigInt::substruct(const BigInt& value) const {
 		{
 			k++;
 		};
-		str = str.substr(k, str.size() - 1);
-	}
-
-	BigInt bi = BigInt(str);
-
-	if (isMaxValIsNegative || isMaxValIsRightVal) {
-		bi.makeNegative();
+		return str.substr(k, str.size() - 1);
 	}
 
 	return bi;
@@ -323,7 +326,7 @@ BigInt BigInt::operator+(const BigInt& value) const {
 }
 
 
-BigInt BigInt::operator-(const BigInt& value) const {
+BigInt BigInt::operator-(const BigInt& value) const{
 	const BigInt& thisVal = *this;
 
 	int i = size - 1;
