@@ -22,7 +22,6 @@ int main() {
 	BigInt res4 = f + g; //-150
 	BigInt res5 = g2 + g3; //-400
 	BigInt res6 = k + l; //100
-	BigInt res6 = k + l; //100
 
 	std::cout << std::abs(-9);
 
