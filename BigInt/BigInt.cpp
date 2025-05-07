@@ -342,6 +342,77 @@ BigInt BigInt::operator-(const BigInt& value) const {
 	return BigInt();
 }
 
+BigInt BigInt::operator/(const BigInt& value) const {
+	return BigInt();
+}
+
+BigInt BigInt::operator*(const BigInt& value) const {
+	
+	int i = this->size;
+	int j = value.getSize();
+
+	const int* multiplier1 = nullptr;
+	const int* multiplier2 = nullptr;
+
+	int endSize = i + j;
+	int* endResult = new int[endSize]{0};
+
+	int transfer = 0;
+	int offset = 0;
+
+	int maxIndex = std::max(i, j);
+	int minIndex = std::min(i, j);
+
+	if (maxIndex == i) {
+		multiplier1 = this->getData();
+		multiplier2 = value.getData();
+	}
+	else {
+		multiplier1 = value.getData();
+		multiplier2 = this->getData();
+	}
+
+	for (int k = minIndex - 1; k >= 0; k--) { //здесь меньшее число по размеру
+		int endIndex = endSize - 1;
+		int digit2 = *(multiplier2 + k);
+		for (int l = maxIndex - 1; l >= 0; l--) { // здесь большее число размеру
+			int digit1 = *(multiplier2 + l);
+			int product = digit1 * digit2 + transfer;
+			transfer = 0;
+
+			if (product >= 10) {
+				transfer = product / 10;
+				product = product % 10;
+			}
+
+			int* p = endResult + endIndex - offset;
+			*p = *p + product;
+			endIndex--;
+		}
+
+		if (transfer > 0) {
+			*(endResult + endIndex - offset) = transfer;
+		}
+		offset++;
+	}
+
+	//просто сделай потом проверку на ноль
+	std::string str;
+	int strIndex = *(endResult) == 0 ? 1 : 0;
+
+	for (size_t m = strIndex; m < endSize; m++) {
+		int val = *(endResult + m);
+		str.append(std::to_string(val));
+	}
+
+	delete[] endResult;
+	//добавь учет знаков множителей
+	return BigInt(str);
+}
+
+
+
+
 bool BigInt::operator<(const BigInt& value) const {
 	return max(*this, value) == *this ? false : true;
 };

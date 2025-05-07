@@ -36,5 +36,7 @@ public:
 	bool operator>(const BigInt& value) const;
 	BigInt operator+(const BigInt& value) const;
 	BigInt operator-(const BigInt& value) const;
+	BigInt operator/(const BigInt& value) const;
+	BigInt operator*(const BigInt& value) const;
 
 };
