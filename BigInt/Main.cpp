@@ -8,8 +8,8 @@ int main() {
 
 	
 
-	BigInt a = 14;
-	BigInt b = 14;
+	BigInt a("345678"); //
+	BigInt b("34534"); //
 
 	BigInt c = a * b;
 

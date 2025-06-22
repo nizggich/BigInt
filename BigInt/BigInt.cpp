@@ -351,13 +351,17 @@ BigInt BigInt::operator*(const BigInt& value) const {
 	int i = this->size;
 	int j = value.getSize();
 
+	char sign1 = this->getSign();
+	char sign2 = value.getSign();
+
 	const int* multiplier1 = nullptr;
 	const int* multiplier2 = nullptr;
 
 	int endSize = i + j;
 	int* endResult = new int[endSize]{0};
 
-	int transfer = 0;
+	int multiplyTransfer = 0;
+	int sumTransfer = 0;
 	int offset = 0;
 
 	int maxIndex = std::max(i, j);
@@ -373,30 +377,43 @@ BigInt BigInt::operator*(const BigInt& value) const {
 	}
 
 	for (int k = minIndex - 1; k >= 0; k--) { //здесь меньшее число по размеру
+		std::string str;
 		int endIndex = endSize - 1;
 		int digit2 = *(multiplier2 + k);
 		for (int l = maxIndex - 1; l >= 0; l--) { // здесь большее число размеру
-			int digit1 = *(multiplier2 + l);
-			int product = digit1 * digit2 + transfer;
-			transfer = 0;
+			int digit1 = *(multiplier1 + l);
+			int product = digit1 * digit2 + multiplyTransfer;
+			multiplyTransfer = 0;
 
 			if (product >= 10) {
-				transfer = product / 10;
+				multiplyTransfer = product / 10;
 				product = product % 10;
 			}
 
 			int* p = endResult + endIndex - offset;
-			*p = *p + product;
+			int sum = *p + product + sumTransfer;
+			if (sum >= 10) {
+				sumTransfer = sum / 10;
+				sum %= 10; 
+			}
+
+			str.insert(0, std::to_string(sum));  //debug
+			*p = sum;
 			endIndex--;
 		}
 
-		if (transfer > 0) {
-			*(endResult + endIndex - offset) = transfer;
+		if (multiplyTransfer > 0) {
+			*(endResult + endIndex - offset) = multiplyTransfer;
+			str.insert(0, std::to_string(multiplyTransfer));//debug
+			multiplyTransfer = 0;
 		}
 		offset++;
 	}
+	//1382712
+	if (sumTransfer > 0) {
+		*endResult = sumTransfer;
+	}
 
-	//просто сделай потом проверку на ноль
 	std::string str;
 	int strIndex = *(endResult) == 0 ? 1 : 0;
 
@@ -405,9 +422,13 @@ BigInt BigInt::operator*(const BigInt& value) const {
 		str.append(std::to_string(val));
 	}
 
+	if (sign1 != sign2) {
+		str.insert(0, "-");
+	}
+
 	delete[] endResult;
-	//добавь учет знаков множителей
-	return BigInt(str);
+	
+	return BigInt(str); //11937644052
 }
 
 
