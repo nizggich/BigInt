@@ -376,15 +376,17 @@ BigInt BigInt::operator*(const BigInt& value) const {
 		multiplier2 = this->getData();
 	}
 
-	for (int k = minIndex - 1; k >= 0; k--) { //здесь меньшее число по размеру
-		std::string str;
+	for (int k = minIndex - 1; k >= 0; k--) {
+		std::string strSum;
+		std::string strMultiply;
 		int endIndex = endSize - 1;
 		int digit2 = *(multiplier2 + k);
-		for (int l = maxIndex - 1; l >= 0; l--) { // здесь большее число размеру
+
+		for (int l = maxIndex - 1; l >= 0; l--) { 
+
 			int digit1 = *(multiplier1 + l);
 			int product = digit1 * digit2 + multiplyTransfer;
 			multiplyTransfer = 0;
-
 			if (product >= 10) {
 				multiplyTransfer = product / 10;
 				product = product % 10;
@@ -392,24 +394,24 @@ BigInt BigInt::operator*(const BigInt& value) const {
 
 			int* p = endResult + endIndex - offset;
 			int sum = *p + product + sumTransfer;
+			sumTransfer = 0;
 			if (sum >= 10) {
 				sumTransfer = sum / 10;
 				sum %= 10; 
 			}
 
-			str.insert(0, std::to_string(sum));  //debug
 			*p = sum;
 			endIndex--;
 		}
 
-		if (multiplyTransfer > 0) {
-			*(endResult + endIndex - offset) = multiplyTransfer;
-			str.insert(0, std::to_string(multiplyTransfer));//debug
+		if (multiplyTransfer > 0 || sumTransfer > 0) {
+			*(endResult + endIndex - offset) = multiplyTransfer + sumTransfer;
 			multiplyTransfer = 0;
+			sumTransfer = 0;
 		}
 		offset++;
 	}
-	//1382712
+	
 	if (sumTransfer > 0) {
 		*endResult = sumTransfer;
 	}
@@ -428,7 +430,7 @@ BigInt BigInt::operator*(const BigInt& value) const {
 
 	delete[] endResult;
 	
-	return BigInt(str); //11937644052
+	return BigInt(str); 
 }
 
 
