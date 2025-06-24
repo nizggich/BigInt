@@ -65,10 +65,6 @@ char BigInt::getSign() const {
 	return sign;
 }
 
-const int* BigInt::getData() const {
-	return data;
-}
-
 const int BigInt::getCapacity() {
 	return capacity;
 }
@@ -113,8 +109,8 @@ const BigInt& BigInt::max(const BigInt& a, const BigInt& b) {
 		}
 	}
 
-	const int* pa = a.getData();
-	const int* pb = b.getData();
+	const int* pa = a.data;
+	const int* pb = b.data;
 
 	int i = 0;
 
@@ -189,8 +185,8 @@ BigInt BigInt::substruct(const BigInt& value) const {
 	const BigInt& maxVal = max(aMod, bMod);
 	const BigInt& minVal = min(aMod, bMod);
 
-	const int* minuend = maxVal.getData();
-	const int* subtrahend = minVal.getData();
+	const int* minuend = maxVal.data;
+	const int* subtrahend = minVal.data;
 
 	int aDigit = 0;
 	int bDigit = 0;
@@ -252,8 +248,8 @@ BigInt BigInt::add(const BigInt& value) const {
 	int i = getSize() - 1;
 	int j = value.getSize() - 1;
 
-	const int* term1 = getData();
-	const int* term2 = value.getData();
+	const int* term1 = this->data;
+	const int* term2 = value.data;
 
 	int index = 0;
 	int transfer = 0;
@@ -368,12 +364,12 @@ BigInt BigInt::operator*(const BigInt& value) const {
 	int minIndex = std::min(i, j);
 
 	if (maxIndex == i) {
-		multiplier1 = this->getData();
-		multiplier2 = value.getData();
+		multiplier1 = this->data;
+		multiplier2 = value.data;
 	}
 	else {
-		multiplier1 = value.getData();
-		multiplier2 = this->getData();
+		multiplier1 = value.data;
+		multiplier2 = this->data;
 	}
 
 	for (int k = minIndex - 1; k >= 0; k--) {

@@ -20,7 +20,6 @@ public:
 	int getSize() const;
 	char getSign() const;
 	static const int getCapacity();
-	const int* getData() const;
 
 	bool isNegative() const;
 	void makePositive();
