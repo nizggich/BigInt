@@ -65,10 +65,6 @@ char BigInt::getSign() const {
 	return sign;
 }
 
-const int BigInt::getCapacity() {
-	return capacity;
-}
-
 bool BigInt::isNegative() const {
 	return sign == '-';
 }
@@ -339,8 +335,24 @@ BigInt BigInt::operator-(const BigInt& value) const {
 }
 
 BigInt BigInt::operator/(const BigInt& value) const {
-	return BigInt();
+	int dividendSize = this->size;
+	int dividerdSize = value.getSize();
+
+	const int* dividendPointer = this->data;
+	const int* dividerPointer = value.data;
+
+	if (dividendSize < dividerdSize) {
+		return 0;
+	}
+	else if (dividendSize == dividerdSize) {
+		return 1;
+	}
+
+	int tempDevidend = *dividendPointer;
+	for (int i = 1; i < dividendSize; ++i) {
+	}
 }
+
 
 BigInt BigInt::operator*(const BigInt& value) const {
 	

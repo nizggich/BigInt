@@ -19,7 +19,6 @@ public:
 
 	int getSize() const;
 	char getSign() const;
-	static const int getCapacity();
 
 	bool isNegative() const;
 	void makePositive();
