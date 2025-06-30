@@ -25,7 +25,7 @@ BigInt::BigInt(const long long& value1) {
 	long long tValue = std::abs(value1);
 	int index = size - 1;
 
-	for (size_t i = 0; i < size - 1; i++) {
+	for (size_t i = 0; i < size; i++) { //why was i < size - 1 ?
 		data[i] = 0;
 	}
 
@@ -87,7 +87,6 @@ const BigInt& BigInt::max(const BigInt& a, const BigInt& b) {
 	char aSign = a.sign;
 	char bSign = b.sign;
 
-
 	if (aSign - bSign == 0 && a.size != b.size) {
 		if (a.isNegative()) {
 			return a.size > b.size ? b : a;
@@ -104,6 +103,9 @@ const BigInt& BigInt::max(const BigInt& a, const BigInt& b) {
 			return a;
 		}
 	}
+
+	int aSize = a.getSize();
+	int bSize = b.getSize();
 
 	const int* pa = a.data;
 	const int* pb = b.data;
@@ -334,23 +336,40 @@ BigInt BigInt::operator-(const BigInt& value) const {
 	return BigInt();
 }
 
-BigInt BigInt::operator/(const BigInt& value) const {
+BigInt BigInt::operator/(const BigInt& divider) const {
 	int dividendSize = this->size;
-	int dividerdSize = value.getSize();
+	int dividerSize = divider.getSize();
 
-	const int* dividendPointer = this->data;
-	const int* dividerPointer = value.data;
-
-	if (dividendSize < dividerdSize) {
+	if (dividendSize < dividerSize) {
 		return 0;
 	}
-	else if (dividendSize == dividerdSize) {
-		return 1;
+	
+	int dividendScale = dividendSize;
+	int dividerScale = dividerSize;
+
+	std::string dividendNormStr = toString().insert(0, "0.");
+	std::string dividerNormStr = divider.toString().insert(0, "0.");
+
+	double dividendNorm = std::stod(dividendNormStr);
+	double dividerNorm = std::stod(dividerNormStr);
+
+	double x0 = 1 / dividerNorm;
+
+
+	for (int i = 0; i < 5; i++) {
+		x0 = x0 * (2 - dividerNorm * x0);
 	}
 
-	int tempDevidend = *dividendPointer;
-	for (int i = 1; i < dividendSize; ++i) {
+	double value = dividendNorm * x0 * std::pow(10, std::abs(dividendScale - dividerScale));
+
+
+	BigInt result =  BigInt(int(value));
+
+	if (sign != divider.sign) {
+		result.makeNegative();
 	}
+	
+	return result;
 }
 
 
@@ -432,7 +451,7 @@ BigInt BigInt::operator*(const BigInt& value) const {
 		str.append(std::to_string(val));
 	}
 
-	if (sign1 != sign2) {
+	if (sign1 != sign2) { //лучше сперва создать BigInt, а потом в случае необходимости поменять ему знак. Так более эффективнее
 		str.insert(0, "-");
 	}
 
@@ -441,8 +460,9 @@ BigInt BigInt::operator*(const BigInt& value) const {
 	return BigInt(str); 
 }
 
-
-
+BigInt BigInt::operator*(const long long& value) const {
+	return *this * BigInt(value);
+}
 
 bool BigInt::operator<(const BigInt& value) const {
 	return max(*this, value) == *this ? false : true;
@@ -452,6 +472,54 @@ bool BigInt::operator>(const BigInt& value) const {
 	return value < *this;
 };
 
+bool BigInt::operator>=(const BigInt& value) const{
+	return *this == value || *this > value;
+}
 
+bool BigInt::operator<=(const BigInt& value) const {
+	return *this == value || *this < value;
+}
+
+std::string BigInt::toString() const {
+	std::string str;
+	for (int i = 0; i < this->size; i++) {
+		str.append(std::to_string(this->data[i]));
+	}
+
+	if (isNegative()) {
+		str.insert(0, 1, sign);
+	}
+
+	return str;
+}
+
+bool BigInt::pushBackDigit(int digit) {
+	if (digit > 9 || size == capacity) {
+		return 0;
+	}
+
+	data[size] = digit;
+	++size;
+
+	return 1;
+}
+
+BigInt BigInt::operator=(const BigInt& value) {
+	sign = value.sign;
+	size = value.size;
+
+	int i;
+
+	for (i = 0; i < capacity; ++i) {
+		if (i < value.size) {
+			data[i] = value.data[i];
+		}
+		else {
+			data[i] = 0;
+		}
+	}
+
+	return *this;
+}
 
 

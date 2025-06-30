@@ -25,4 +25,3 @@ int getNumberOfDigits(const long long& value) {
 	return numberOfDigits;
 }
 
-
